@@ -1,14 +1,18 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/vlakevas/rss-gator/internal/config"
+	"github.com/vlakevas/rss-gator/internal/database"
 )
 
 type state struct {
 	cfg *config.Config
+	db  *database.Queries
 }
 
 func main() {
@@ -17,8 +21,16 @@ func main() {
 		log.Fatalf("failed to read config: %v", err)
 	}
 
-	main_state := state{ // main state as in the state the is initialized here not implying that other states will be
+	dbUrl := main_cfg.DBURL
+	db, err := sql.Open("postgres", dbUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	main_state := state{ // main_state as in the state the is initialized here not implying that other states will be
 		cfg: &main_cfg,
+		db:  database.New(db),
 	}
 
 	main_commands := commands{
@@ -26,6 +38,9 @@ func main() {
 	}
 
 	main_commands.register("login", handlerLogin)
+	main_commands.register("register", handlerRegister)
+	main_commands.register("reset", handlerReset)
+	main_commands.register("users", handlerListUsers)
 
 	arguments := os.Args
 

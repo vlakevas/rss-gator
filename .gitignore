@@ -1,1 +1,11 @@
-gator
+/gator
+
+# Test binaries
+*.test
+
+# Coverage output
+*.out
+
+# OS/editor cruft
+.DS_Store
+*.swp
